@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нормативы метрик недвижимости</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .metrics-list {
+            background: #f7fafc;
+            border-radius: 16px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .metrics-list h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-btn {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-size: 13px;
+            color: #4a5568;
+            position: relative;
+        }
+        
+        .metric-btn:hover {
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+        
+        .metric-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .metric-btn.priority {
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .metric-btn.priority::after {
+            content: "🔥";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .chart-section {
+            background: #f7fafc;
+            border-radius: 16px;
+            padding: 25px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 25px;
+        }
+        
+        .norms-section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .norms-section h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .norms-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .norm-card {
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .norm-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .norm-card.bad {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            border: 2px solid #fc8181;
+        }
+        
+        .norm-card.normal {
+            background: linear-gradient(135deg, #feebc8 0%, #fbd38d 100%);
+            border: 2px solid #f6ad55;
+        }
+        
+        .norm-card.good {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            border: 2px solid #68d391;
+        }
+        
+        .norm-card h4 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .norm-card.bad h4 { color: #c53030; }
+        .norm-card.normal h4 { color: #c05621; }
+        .norm-card.good h4 { color: #276749; }
+        
+        .norm-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            background: white;
+            transition: border-color 0.2s;
+        }
+        
+        .norm-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .range-display {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 8px;
+        }
+        
+        .offices-section {
+            margin-top: 25px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab.bad-active { background: #fc8181; color: white; }
+        .tab.normal-active { background: #f6ad55; color: white; }
+        .tab.good-active { background: #68d391; color: #22543d; }
+        
+        .offices-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 12px;
+        }
+        
+        .office-tag {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .office-tag.bad { background: #fed7d7; color: #c53030; }
+        .office-tag.normal { background: #feebc8; color: #c05621; }
+        .office-tag.good { background: #c6f6d5; color: #276749; }
+        
+        .office-value {
+            font-weight: 700;
+            font-size: 12px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .priority-banner {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border: 2px solid #fc8181;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .priority-icon {
+            font-size: 40px;
+        }
+        
+        .priority-content h3 {
+            color: #c53030;
+            margin-bottom: 5px;
+        }
+        
+        .priority-content p {
+            color: #742a2a;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .auto-calc-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .auto-calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .percentile-hint {
+            font-size: 12px;
+            color: #718096;
+            font-style: italic;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Система нормативов метрик</h1>
+        <p class="subtitle">Анализ эффективности офисов недвижимости</p>
+        
+        <div class="priority-banner">
+            <div class="priority-icon">🚨</div>
+            <div class="priority-content">
+                <h3>Приоритетные метрики для исправления</h3>
+                <p><strong>1. Доля просроченных лидов</strong> — потеря клиентов из-за медленной реакции<br>
+                <strong>2. Доля объектов на первой стадии</strong> — "застой" сделок, замороженные деньги<br>
+                <strong>3. Новые договоры на агента</strong> — отсутствие новых поступлений в воронку</p>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metrics-list">
+                <h3>📋 Выберите метрику</h3>
+                <div id="metricsButtons"></div>
+            </div>
+            
+            <div class="chart-section">
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="statMean">—</div>
+                        <div class="stat-label">Среднее</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statMedian">—</div>
+                        <div class="stat-label">Медиана</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statMin">—</div>
+                        <div class="stat-label">Мин</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statMax">—</div>
+                        <div class="stat-label">Макс</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="norms-section">
+            <h3>⚙️ Настройка нормативов <button class="auto-calc-btn" onclick="autoCalculateNorms()">🎯 Авторасчёт (процентили)</button></h3>
+            
+            <div class="norms-grid">
+                <div class="norm-card bad">
+                    <h4>🔴 Плохо</h4>
+                    <input type="number" class="norm-input" id="badThreshold" step="0.01" onchange="updateOffices()">
+                    <div class="range-display" id="badRange">До значения</div>
+                    <div class="percentile-hint">~25-й процентиль</div>
+                </div>
+                <div class="norm-card normal">
+                    <h4>🟡 Нормально</h4>
+                    <input type="number" class="norm-input" id="normalThreshold" step="0.01" onchange="updateOffices()">
+                    <div class="range-display" id="normalRange">От - до</div>
+                    <div class="percentile-hint">25-75-й процентиль</div>
+                </div>
+                <div class="norm-card good">
+                    <h4>🟢 Хорошо</h4>
+                    <input type="number" class="norm-input" id="goodThreshold" step="0.01" onchange="updateOffices()">
+                    <div class="range-display" id="goodRange">От значения</div>
+                    <div class="percentile-hint">~75-й процентиль</div>
+                </div>
+            </div>
+
+            <div class="offices-section">
+                <div class="tabs">
+                    <button class="tab bad-active" onclick="showTab('bad')">🔴 Плохо (<span id="badCount">0</span>)</button>
+                    <button class="tab normal-active" onclick="showTab('normal')">🟡 Нормально (<span id="normalCount">0</span>)</button>
+                    <button class="tab good-active" onclick="showTab('good')">🟢 Хорошо (<span id="goodCount">0</span>)</button>
+                </div>
+                <div class="offices-list" id="officesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные из датасета (первые 600 офисов с данными)
+        const rawData = [
+            {office: "Офис1", address: "Адрес1", newContracts: 0, agents5plus: 0, objectsWithContracts: 2.5, exclusiveShare: 1, adsPerAgent: 0.25, contractAdsShare: 0.1, agents10plusAds: 0, mlsShare: 0.1, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.996, stage1Share: 0.979, adsWithInquiries: 0, stage1Hours: 5259},
+            {office: "Офис2", address: "Адрес2", newContracts: 2.67, agents5plus: 0.11, objectsWithContracts: 3.33, exclusiveShare: 0.1, adsPerAgent: 0.44, contractAdsShare: 0.13, agents10plusAds: 0, mlsShare: 0.55, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0.25, inquiriesPerObject: 0, overdueLeads: 0.964, stage1Share: 0.848, adsWithInquiries: 0, stage1Hours: 5348},
+            {office: "Офис3", address: "Адрес3", newContracts: 0, agents5plus: 0, objectsWithContracts: 1.5, exclusiveShare: 0.33, adsPerAgent: 0.5, contractAdsShare: 0.33, agents10plusAds: 0, mlsShare: 0, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 1, stage1Share: 0.75, adsWithInquiries: 0, stage1Hours: 3957},
+            {office: "Офис4", address: "Адрес4", newContracts: 0, agents5plus: 0, objectsWithContracts: 18.5, exclusiveShare: 0.014, adsPerAgent: 0.25, contractAdsShare: 0.014, agents10plusAds: 0, mlsShare: 0.081, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.978, stage1Share: 0.729, adsWithInquiries: 0, stage1Hours: 7357},
+            {office: "Офис5", address: "Адрес5", newContracts: 0, agents5plus: 0, objectsWithContracts: 28, exclusiveShare: 0.058, adsPerAgent: 0.091, contractAdsShare: 0.003, agents10plusAds: 0, mlsShare: 0, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 1, stage1Share: 0.702, adsWithInquiries: 0, stage1Hours: 5137},
+            {office: "Офис6", address: "Адрес6", newContracts: 3.67, agents5plus: 0.33, objectsWithContracts: 2.33, exclusiveShare: 0, adsPerAgent: 0.33, contractAdsShare: 0.14, agents10plusAds: 0, mlsShare: 0.857, priceReductionShare: 0, reductionPercent: 0.096, exposure90plus: 0, inquiriesPerObject: 1, overdueLeads: 0.759, stage1Share: 0.687, adsWithInquiries: 0, stage1Hours: 6637},
+            {office: "Офис7", address: "Адрес7", newContracts: 0.09, agents5plus: 0, objectsWithContracts: 1.36, exclusiveShare: 0.8, adsPerAgent: 0.18, contractAdsShare: 0.13, agents10plusAds: 0, mlsShare: 0.4, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0.5, inquiriesPerObject: 0, overdueLeads: 0.976, stage1Share: 0.659, adsWithInquiries: 0, stage1Hours: 5699},
+            {office: "Офис8", address: "Адрес8", newContracts: 0.33, agents5plus: 0, objectsWithContracts: 2.33, exclusiveShare: 1, adsPerAgent: 1.67, contractAdsShare: 0.71, agents10plusAds: 0, mlsShare: 0.857, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0.4, inquiriesPerObject: 0, overdueLeads: 0.789, stage1Share: 0.632, adsWithInquiries: 0, stage1Hours: 6387},
+            {office: "Офис9", address: "Адрес9", newContracts: 0.5, agents5plus: 0, objectsWithContracts: 1.67, exclusiveShare: 0.4, adsPerAgent: 0.17, contractAdsShare: 0.1, agents10plusAds: 0, mlsShare: 0.5, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.862, stage1Share: 0.621, adsWithInquiries: 0, stage1Hours: 1550},
+            {office: "Офис10", address: "Адрес10", newContracts: 0, agents5plus: 0, objectsWithContracts: 2.13, exclusiveShare: 0, adsPerAgent: 0.38, contractAdsShare: 0.18, agents10plusAds: 0, mlsShare: 0.294, priceReductionShare: 0, reductionPercent: -0.013, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.915, stage1Share: 0.610, adsWithInquiries: 0, stage1Hours: 7577},
+            {office: "Офис11", address: "Адрес11", newContracts: 0, agents5plus: 0, objectsWithContracts: 8, exclusiveShare: 0, adsPerAgent: 1, contractAdsShare: 0.125, agents10plusAds: 0, mlsShare: 0, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.987, stage1Share: 0.566, adsWithInquiries: 0, stage1Hours: 10968},
+            {office: "Офис12", address: "Адрес12", newContracts: 0.25, agents5plus: 0, objectsWithContracts: 1.25, exclusiveShare: 0, adsPerAgent: 0.75, contractAdsShare: 0.6, agents10plusAds: 0, mlsShare: 0.8, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0.67, inquiriesPerObject: 0, overdueLeads: 0.852, stage1Share: 0.556, adsWithInquiries: 0, stage1Hours: 9047},
+            {office: "Офис13", address: "Адрес13", newContracts: 0, agents5plus: 0, objectsWithContracts: 2.5, exclusiveShare: 0, adsPerAgent: 0.25, contractAdsShare: 0.1, agents10plusAds: 0, mlsShare: 0.1, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 1, stage1Share: 0.529, adsWithInquiries: 0, stage1Hours: 3805},
+            {office: "Офис14", address: "Адрес14", newContracts: 1, agents5plus: 0, objectsWithContracts: 85, exclusiveShare: 0, adsPerAgent: 8.33, contractAdsShare: 0.098, agents10plusAds: 0.67, mlsShare: 0.118, priceReductionShare: 0.16, reductionPercent: -0.019, exposure90plus: 0.84, inquiriesPerObject: 0.04, overdueLeads: 0.975, stage1Share: 0.518, adsWithInquiries: 0, stage1Hours: 11788},
+            {office: "Офис15", address: "Адрес15", newContracts: 0.8, agents5plus: 0, objectsWithContracts: 6.4, exclusiveShare: 0.063, adsPerAgent: 1, contractAdsShare: 0.156, agents10plusAds: 0, mlsShare: 0.188, priceReductionShare: 0.2, reductionPercent: 0.014, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.893, stage1Share: 0.482, adsWithInquiries: 0, stage1Hours: 8394},
+            {office: "Офис16", address: "Адрес16", newContracts: 0.125, agents5plus: 0, objectsWithContracts: 12.88, exclusiveShare: 0.495, adsPerAgent: 0.375, contractAdsShare: 0.029, agents10plusAds: 0, mlsShare: 0.076, priceReductionShare: 0.33, reductionPercent: -0.003, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.871, stage1Share: 0.475, adsWithInquiries: 0, stage1Hours: 6603},
+            {office: "Офис17", address: "Адрес17", newContracts: 0.17, agents5plus: 0, objectsWithContracts: 4.17, exclusiveShare: 0.12, adsPerAgent: 0.17, contractAdsShare: 0.04, agents10plusAds: 0, mlsShare: 0.16, priceReductionShare: 0, reductionPercent: -0.001, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.876, stage1Share: 0.438, adsWithInquiries: 0, stage1Hours: 3431},
+            {office: "Офис18", address: "Адрес18", newContracts: 4.5, agents5plus: 0.5, objectsWithContracts: 16.5, exclusiveShare: 0.303, adsPerAgent: 2, contractAdsShare: 0.121, agents10plusAds: 0, mlsShare: 0.606, priceReductionShare: 0.25, reductionPercent: -0.039, exposure90plus: 0.5, inquiriesPerObject: 0, overdueLeads: 0.669, stage1Share: 0.397, adsWithInquiries: 0, stage1Hours: 1641},
+            {office: "Офис19", address: "Адрес19", newContracts: 4, agents5plus: 0.25, objectsWithContracts: 3.75, exclusiveShare: 0, adsPerAgent: 3.63, contractAdsShare: 0.967, agents10plusAds: 0.125, mlsShare: 1, priceReductionShare: 0.034, reductionPercent: 0, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.378, stage1Share: 0.356, adsWithInquiries: 0, stage1Hours: 8055},
+            {office: "Офис20", address: "Адрес20", newContracts: 0.33, agents5plus: 0, objectsWithContracts: 1.33, exclusiveShare: 0.25, adsPerAgent: 1, contractAdsShare: 0.75, agents10plusAds: 0, mlsShare: 0.75, priceReductionShare: 0.33, reductionPercent: -0.009, exposure90plus: 0.33, inquiriesPerObject: 0, overdueLeads: 0.844, stage1Share: 0.354, adsWithInquiries: 0, stage1Hours: 12366},
+            {office: "Офис21", address: "Адрес21", newContracts: 1.4, agents5plus: 0, objectsWithContracts: 5.6, exclusiveShare: 0.25, adsPerAgent: 0.2, contractAdsShare: 0.036, agents10plusAds: 0, mlsShare: 0.793, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.475, stage1Share: 0.344, adsWithInquiries: 0, stage1Hours: 5789},
+            {office: "Офис22", address: "Адрес22", newContracts: 4, agents5plus: 0, objectsWithContracts: 18, exclusiveShare: 0.278, adsPerAgent: 13, contractAdsShare: 0.722, agents10plusAds: 1, mlsShare: 0.722, priceReductionShare: 0.077, reductionPercent: -0.008, exposure90plus: 0.46, inquiriesPerObject: 0, overdueLeads: 0.725, stage1Share: 0.325, adsWithInquiries: 0, stage1Hours: 4825},
+            {office: "Офис23", address: "Адрес23", newContracts: 2, agents5plus: 0, objectsWithContracts: 9, exclusiveShare: 0, adsPerAgent: 9, contractAdsShare: 1, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0.111, reductionPercent: -0.011, exposure90plus: 0.56, inquiriesPerObject: 0, overdueLeads: 0.56, stage1Share: 0.32, adsWithInquiries: 0, stage1Hours: 11817},
+            {office: "Офис24", address: "Адрес24", newContracts: 7, agents5plus: 0.5, objectsWithContracts: 21, exclusiveShare: 0.214, adsPerAgent: 14.33, contractAdsShare: 0.683, agents10plusAds: 0.33, mlsShare: 0.889, priceReductionShare: 0.058, reductionPercent: 0.001, exposure90plus: 0.337, inquiriesPerObject: 0, overdueLeads: 0.604, stage1Share: 0.302, adsWithInquiries: 0, stage1Hours: 4233},
+            {office: "Офис25", address: "Адрес25", newContracts: 0, agents5plus: 0, objectsWithContracts: 1.33, exclusiveShare: 0.25, adsPerAgent: 0.33, contractAdsShare: 0.25, agents10plusAds: 0, mlsShare: 0.5, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.333, stage1Share: 0.238, adsWithInquiries: 0, stage1Hours: 236},
+            {office: "Офис26", address: "Адрес26", newContracts: 0.75, agents5plus: 0, objectsWithContracts: 2.75, exclusiveShare: 0.182, adsPerAgent: 0.75, contractAdsShare: 0.273, agents10plusAds: 0, mlsShare: 0.455, priceReductionShare: 0.33, reductionPercent: 0, exposure90plus: 0, inquiriesPerObject: 2, overdueLeads: 0.685, stage1Share: 0.222, adsWithInquiries: 0, stage1Hours: 885},
+            {office: "Офис27", address: "Адрес27", newContracts: 0, agents5plus: 0, objectsWithContracts: 1.67, exclusiveShare: 0, adsPerAgent: 1, contractAdsShare: 0.6, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0.33, reductionPercent: -0.0004, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.409, stage1Share: 0.194, adsWithInquiries: 0, stage1Hours: 4802},
+            {office: "Офис28", address: "Адрес28", newContracts: 1.75, agents5plus: 0.25, objectsWithContracts: 13.25, exclusiveShare: 0.075, adsPerAgent: 5.5, contractAdsShare: 0.415, agents10plusAds: 0, mlsShare: 0.643, priceReductionShare: 0.227, reductionPercent: -0.011, exposure90plus: 0.318, inquiriesPerObject: 0.045, overdueLeads: 0.782, stage1Share: 0.192, adsWithInquiries: 0, stage1Hours: 7639},
+            {office: "Офис29", address: "Адрес29", newContracts: 0.75, agents5plus: 0, objectsWithContracts: 1, exclusiveShare: 0, adsPerAgent: 1, contractAdsShare: 1, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0, reductionPercent: 0.012, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.182, stage1Share: 0.182, adsWithInquiries: 0, stage1Hours: 810},
+            {office: "Офис30", address: "Адрес30", newContracts: 3, agents5plus: 0.17, objectsWithContracts: 12.5, exclusiveShare: 0, adsPerAgent: 4.83, contractAdsShare: 0.387, agents10plusAds: 0.33, mlsShare: 0.747, priceReductionShare: 0.207, reductionPercent: -0.005, exposure90plus: 0.207, inquiriesPerObject: 0, overdueLeads: 0.392, stage1Share: 0.155, adsWithInquiries: 0, stage1Hours: 1007},
+            {office: "Офис31", address: "Адрес31", newContracts: 0.5, agents5plus: 0, objectsWithContracts: 2.5, exclusiveShare: 0, adsPerAgent: 2, contractAdsShare: 0.8, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0, reductionPercent: -0.01, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.385, stage1Share: 0.154, adsWithInquiries: 0, stage1Hours: 2354},
+            {office: "Офис32", address: "Адрес32", newContracts: 0, agents5plus: 0, objectsWithContracts: 0.67, exclusiveShare: 1, adsPerAgent: 0.67, contractAdsShare: 1, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 1, stage1Share: 0.154, adsWithInquiries: 0, stage1Hours: 7842},
+            {office: "Офис33", address: "Адрес33", newContracts: 6.5, agents5plus: 0.75, objectsWithContracts: 23, exclusiveShare: 0, adsPerAgent: 4.75, contractAdsShare: 0.207, agents10plusAds: 0.25, mlsShare: 0.804, priceReductionShare: 0.105, reductionPercent: -0.015, exposure90plus: 0.053, inquiriesPerObject: 0, overdueLeads: 0.634, stage1Share: 0.108, adsWithInquiries: 0, stage1Hours: 1923},
+            {office: "Офис34", address: "Адрес34", newContracts: 0, agents5plus: 0, objectsWithContracts: 3.33, exclusiveShare: 0.1, adsPerAgent: 0.67, contractAdsShare: 0.2, agents10plusAds: 0, mlsShare: 0.1, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.953, stage1Share: 0.093, adsWithInquiries: 0, stage1Hours: 7612},
+            {office: "Офис35", address: "Адрес35", newContracts: 0, agents5plus: 0, objectsWithContracts: 31.43, exclusiveShare: 0.018, adsPerAgent: 0.86, contractAdsShare: 0.027, agents10plusAds: 0, mlsShare: 0.027, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0, stage1Share: 0.092, adsWithInquiries: 0, stage1Hours: 17155},
+            {office: "Офис36", address: "Адрес36", newContracts: 0.5, agents5plus: 0, objectsWithContracts: 1, exclusiveShare: 0, adsPerAgent: 0.5, contractAdsShare: 0.5, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0, reductionPercent: -0.003, exposure90plus: 0, inquiriesPerObject: 1, overdueLeads: 0.636, stage1Share: 0.091, adsWithInquiries: 0, stage1Hours: 51},
+            {office: "Офис37", address: "Адрес37", newContracts: 0, agents5plus: 0, objectsWithContracts: 30, exclusiveShare: 0.4, adsPerAgent: 26, contractAdsShare: 0.867, agents10plusAds: 1, mlsShare: 0.867, priceReductionShare: 0.038, reductionPercent: 0.002, exposure90plus: 0.962, inquiriesPerObject: 0, overdueLeads: 0.839, stage1Share: 0.089, adsWithInquiries: 0, stage1Hours: 2084},
+            {office: "Офис38", address: "Адрес38", newContracts: 0, agents5plus: 0, objectsWithContracts: 7.88, exclusiveShare: 0.254, adsPerAgent: 4, contractAdsShare: 0.508, agents10plusAds: 0.125, mlsShare: 0.508, priceReductionShare: 0, reductionPercent: 0.002, exposure90plus: 0.969, inquiriesPerObject: 0, overdueLeads: 0.866, stage1Share: 0.084, adsWithInquiries: 0, stage1Hours: 5562},
+            {office: "Офис39", address: "Адрес39", newContracts: 0, agents5plus: 0, objectsWithContracts: 23.2, exclusiveShare: 0.112, adsPerAgent: 0.8, contractAdsShare: 0.034, agents10plusAds: 0, mlsShare: 0, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.955, stage1Share: 0.081, adsWithInquiries: 0, stage1Hours: 7294},
+            {office: "Офис40", address: "Адрес40", newContracts: 0, agents5plus: 0, objectsWithContracts: 10.71, exclusiveShare: 0.133, adsPerAgent: 4, contractAdsShare: 0.373, agents10plusAds: 0, mlsShare: 0.267, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 1, stage1Share: 0.077, adsWithInquiries: 0, stage1Hours: 4584},
+            {office: "Офис41", address: "Адрес41", newContracts: 3.33, agents5plus: 0.33, objectsWithContracts: 14.33, exclusiveShare: 0.07, adsPerAgent: 11.33, contractAdsShare: 0.791, agents10plusAds: 0.33, mlsShare: 0.93, priceReductionShare: 0.324, reductionPercent: -0.009, exposure90plus: 0.353, inquiriesPerObject: 0, overdueLeads: 0.621, stage1Share: 0.072, adsWithInquiries: 0, stage1Hours: 5526},
+            {office: "Офис42", address: "Адрес42", newContracts: 0, agents5plus: 0, objectsWithContracts: 1.38, exclusiveShare: 0.818, adsPerAgent: 0.75, contractAdsShare: 0.545, agents10plusAds: 0, mlsShare: 0.909, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0.833, inquiriesPerObject: 0, overdueLeads: 0.929, stage1Share: 0.071, adsWithInquiries: 0, stage1Hours: 1783},
+            {office: "Офис43", address: "Адрес43", newContracts: 1, agents5plus: 0, objectsWithContracts: 4, exclusiveShare: 0.5, adsPerAgent: 4, contractAdsShare: 1, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0.375, reductionPercent: -0.005, exposure90plus: 0.625, inquiriesPerObject: 0, overdueLeads: 0.784, stage1Share: 0.068, adsWithInquiries: 0, stage1Hours: 5409},
+            {office: "Офис44", address: "Адрес44", newContracts: 1, agents5plus: 0, objectsWithContracts: 2.83, exclusiveShare: 0.941, adsPerAgent: 2.67, contractAdsShare: 0.941, agents10plusAds: 0.17, mlsShare: 0.882, priceReductionShare: 0.125, reductionPercent: -0.03, exposure90plus: 0.688, inquiriesPerObject: 0, overdueLeads: 0.633, stage1Share: 0.067, adsWithInquiries: 0, stage1Hours: 64},
+            {office: "Офис45", address: "Адрес45", newContracts: 5.33, agents5plus: 0.33, objectsWithContracts: 5, exclusiveShare: 0.067, adsPerAgent: 3.67, contractAdsShare: 0.733, agents10plusAds: 0, mlsShare: 0.867, priceReductionShare: 0.182, reductionPercent: -0.003, exposure90plus: 0.091, inquiriesPerObject: 0, overdueLeads: 0.188, stage1Share: 0.063, adsWithInquiries: 0, stage1Hours: 24},
+            {office: "Офис46", address: "Адрес46", newContracts: 0.33, agents5plus: 0, objectsWithContracts: 4.33, exclusiveShare: 0, adsPerAgent: 3.33, contractAdsShare: 0.769, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0.2, reductionPercent: -0.098, exposure90plus: 0.2, inquiriesPerObject: 0, overdueLeads: 0.063, stage1Share: 0.063, adsWithInquiries: 0, stage1Hours: 557},
+            {office: "Офис47", address: "Адрес47", newContracts: 0.8, agents5plus: 0, objectsWithContracts: 0.4, exclusiveShare: 0, adsPerAgent: 0.2, contractAdsShare: 0.5, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0, reductionPercent: -0.005, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.611, stage1Share: 0.056, adsWithInquiries: 0, stage1Hours: 3626},
+            {office: "Офис48", address: "Адрес48", newContracts: 2, agents5plus: 0.25, objectsWithContracts: 13.5, exclusiveShare: 0, adsPerAgent: 8, contractAdsShare: 0.593, agents10plusAds: 0.5, mlsShare: 0.796, priceReductionShare: 0.125, reductionPercent: -0.006, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.601, stage1Share: 0.051, adsWithInquiries: 0, stage1Hours: 9522},
+            {office: "Офис49", address: "Адрес49", newContracts: 0.91, agents5plus: 0, objectsWithContracts: 5.45, exclusiveShare: 0.583, adsPerAgent: 3.45, contractAdsShare: 0.633, agents10plusAds: 0.091, mlsShare: 0.55, priceReductionShare: 0.263, reductionPercent: -0.006, exposure90plus: 0.526, inquiriesPerObject: 0, overdueLeads: 0.565, stage1Share: 0.047, adsWithInquiries: 0, stage1Hours: 6562},
+            {office: "Офис50", address: "Адрес50", newContracts: 0.12, agents5plus: 0, objectsWithContracts: 3.08, exclusiveShare: 0.513, adsPerAgent: 2.19, contractAdsShare: 0.713, agents10plusAds: 0.077, mlsShare: 0.8, priceReductionShare: 0.123, reductionPercent: -0.006, exposure90plus: 0.772, inquiriesPerObject: 0, overdueLeads: 0.731, stage1Share: 0.046, adsWithInquiries: 0, stage1Hours: 3565},
+            {office: "Офис51", address: "Адрес51", newContracts: 0, agents5plus: 0, objectsWithContracts: 15, exclusiveShare: 0.017, adsPerAgent: 3.25, contractAdsShare: 0.217, agents10plusAds: 0.25, mlsShare: 0.083, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.974, stage1Share: 0.039, adsWithInquiries: 0, stage1Hours: 4778},
+            {office: "Офис52", address: "Адрес52", newContracts: 3.67, agents5plus: 0.33, objectsWithContracts: 4.83, exclusiveShare: 0, adsPerAgent: 3.67, contractAdsShare: 0.759, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0.5, reductionPercent: -0.031, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.033, stage1Share: 0.033, adsWithInquiries: 0, stage1Hours: 318},
+            {office: "Офис53", address: "Адрес53", newContracts: 5.25, agents5plus: 0.25, objectsWithContracts: 13.25, exclusiveShare: 0.538, adsPerAgent: 9.63, contractAdsShare: 0.726, agents10plusAds: 0.25, mlsShare: 0.887, priceReductionShare: 0.117, reductionPercent: -0.007, exposure90plus: 0.831, inquiriesPerObject: 0, overdueLeads: 0.814, stage1Share: 0.031, adsWithInquiries: 0, stage1Hours: 2340},
+            {office: "Офис54", address: "Адрес54", newContracts: 0.8, agents5plus: 0, objectsWithContracts: 16, exclusiveShare: 0.025, adsPerAgent: 8.2, contractAdsShare: 0.513, agents10plusAds: 0.4, mlsShare: 0.95, priceReductionShare: 0.049, reductionPercent: 0.0002, exposure90plus: 0.512, inquiriesPerObject: 0, overdueLeads: 0.634, stage1Share: 0.029, adsWithInquiries: 0, stage1Hours: 2194},
+            {office: "Офис55", address: "Адрес55", newContracts: 0, agents5plus: 0, objectsWithContracts: 6.33, exclusiveShare: 0, adsPerAgent: 1.33, contractAdsShare: 0.211, agents10plusAds: 0, mlsShare: 0.211, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 1, stage1Share: 0.029, adsWithInquiries: 0, stage1Hours: 12151},
+            {office: "Офис56", address: "Адрес56", newContracts: 1, agents5plus: 0, objectsWithContracts: 2, exclusiveShare: 0.5, adsPerAgent: 1, contractAdsShare: 0.5, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 1, reductionPercent: -0.004, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.905, stage1Share: 0.024, adsWithInquiries: 0, stage1Hours: 50},
+            {office: "Офис57", address: "Адрес57", newContracts: 0, agents5plus: 0, objectsWithContracts: 31.75, exclusiveShare: 0, adsPerAgent: 21.75, contractAdsShare: 0.685, agents10plusAds: 0.5, mlsShare: 0.685, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0.966, inquiriesPerObject: 0, overdueLeads: 0.646, stage1Share: 0.024, adsWithInquiries: 0, stage1Hours: 2374},
+            {office: "Офис58", address: "Адрес58", newContracts: 0.25, agents5plus: 0, objectsWithContracts: 8, exclusiveShare: 1, adsPerAgent: 4.25, contractAdsShare: 0.531, agents10plusAds: 0.25, mlsShare: 0.594, priceReductionShare: 0.294, reductionPercent: -0.016, exposure90plus: 0.647, inquiriesPerObject: 0.118, overdueLeads: 0.545, stage1Share: 0.018, adsWithInquiries: 0, stage1Hours: 55},
+            {office: "Офис59", address: "Адрес59", newContracts: 1.25, agents5plus: 0, objectsWithContracts: 17.88, exclusiveShare: 0.056, adsPerAgent: 14.38, contractAdsShare: 0.804, agents10plusAds: 0.5, mlsShare: 0.853, priceReductionShare: 0.2, reductionPercent: -0.009, exposure90plus: 0.8, inquiriesPerObject: 0.009, overdueLeads: 0.831, stage1Share: 0.017, adsWithInquiries: 0, stage1Hours: 5859},
+            {office: "Офис60", address: "Адрес60", newContracts: 6.67, agents5plus: 0.44, objectsWithContracts: 8.89, exclusiveShare: 0, adsPerAgent: 4.78, contractAdsShare: 0.538, agents10plusAds: 0.11, mlsShare: 0.888, priceReductionShare: 0.07, reductionPercent: -0.014, exposure90plus: 0, inquiriesPerObject: 0.023, overdueLeads: 0, stage1Share: 0, adsWithInquiries: 0, stage1Hours: null},
+            {office: "Офис61", address: "Адрес61", newContracts: 4.5, agents5plus: 0.5, objectsWithContracts: 11.5, exclusiveShare: 0.043, adsPerAgent: 6.5, contractAdsShare: 0.565, agents10plusAds: 0.5, mlsShare: 0.957, priceReductionShare: 0.154, reductionPercent: -0.002, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.065, stage1Share: 0, adsWithInquiries: 0, stage1Hours: null},
+            {office: "Офис62", address: "Адрес62", newContracts: 3.64, agents5plus: 0.29, objectsWithContracts: 12.93, exclusiveShare: 0.022, adsPerAgent: 11.29, contractAdsShare: 0.873, agents10plusAds: 0.5, mlsShare: 0.917, priceReductionShare: 0.108, reductionPercent: -0.005, exposure90plus: 0.57, inquiriesPerObject: 0, overdueLeads: 0.212, stage1Share: 0, adsWithInquiries: 0, stage1Hours: null},
+            {office: "Офис63", address: "Адрес63", newContracts: 0.67, agents5plus: 0, objectsWithContracts: 3, exclusiveShare: 0.556, adsPerAgent: 0.67, contractAdsShare: 0.222, agents10plusAds: 0, mlsShare: 0.333, priceReductionShare: 1, reductionPercent: -0.004, exposure90plus: 0, inquiriesPerObject: 0, overdueLeads: 0.645, stage1Share: 0, adsWithInquiries: 0, stage1Hours: null},
+            {office: "Офис64", address: "Адрес64", newContracts: 0.375, agents5plus: 0, objectsWithContracts: 2.5, exclusiveShare: 0.2, adsPerAgent: 0.625, contractAdsShare: 0.25, agents10plusAds: 0, mlsShare: 0.5, priceReductionShare: 0, reductionPercent: 0, exposure90plus: 0.6, inquiriesPerObject: 0.2, overdueLeads: 0.684, stage1Share: 0, adsWithInquiries: 0, stage1Hours: null},
+            {office: "Офис65", address: "Адрес65", newContracts: 0, agents5plus: 0, objectsWithContracts: 1, exclusiveShare: 0.333, adsPerAgent: 1, contractAdsShare: 1, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0, reductionPercent: -0.004, exposure90plus: 1, inquiriesPerObject: 0, overdueLeads: 0.059, stage1Share: 0, adsWithInquiries: 0, stage1Hours: null},
+            {office: "Офис66", address: "Адрес66", newContracts: 0, agents5plus: 0, objectsWithContracts: 7.5, exclusiveShare: 1, adsPerAgent: 3.5, contractAdsShare: 0.467, agents10plusAds: 0, mlsShare: 0.6, priceReductionShare: 0, reductionPercent: -0.004, exposure90plus: 0.286, inquiriesPerObject: 0, overdueLeads: 0.563, stage1Share: 0, adsWithInquiries: 0, stage1Hours: null},
+            {office: "Офис67", address: "Адрес67", newContracts: 62.11, agents5plus: 0.67, objectsWithContracts: 301.22, exclusiveShare: 0.001, adsPerAgent: 179.89, contractAdsShare: 0.597, agents10plusAds: 1, mlsShare: 0.785, priceReductionShare: 0.061, reductionPercent: 0.02, exposure90plus: 0.334, inquiriesPerObject: 0.002, overdueLeads: 0.425, stage1Share: 0.006, adsWithInquiries: 0.006, stage1Hours: 2513},
+            {office: "Офис68", address: "Адрес68", newContracts: 1.5, agents5plus: 0.125, objectsWithContracts: 118.25, exclusiveShare: 0, adsPerAgent: 18.5, contractAdsShare: 0.156, agents10plusAds: 0.625, mlsShare: 0.543, priceReductionShare: 0.061, reductionPercent: -0.003, exposure90plus: 0.601, inquiriesPerObject: 0, overdueLeads: 0.595, stage1Share: 0.182, adsWithInquiries: 0.007, stage1Hours: 7989},
+            {office: "Офис69", address: "Адрес69", newContracts: 5.17, agents5plus: 0.33, objectsWithContracts: 80.33, exclusiveShare: 0.002, adsPerAgent: 59.5, contractAdsShare: 0.741, agents10plusAds: 0.833, mlsShare: 0.82, priceReductionShare: 0.017, reductionPercent: 0.0001, exposure90plus: 0.756, inquiriesPerObject: 0, overdueLeads: 0.711, stage1Share: 0.025, adsWithInquiries: 0.008, stage1Hours: 5809},
+            {office: "Офис70", address: "Адрес70", newContracts: 1.06, agents5plus: 0.059, objectsWithContracts: 7.47, exclusiveShare: 0.197, adsPerAgent: 6.24, contractAdsShare: 0.835, agents10plusAds: 0.235, mlsShare: 0.946, priceReductionShare: 0.302, reductionPercent: -0.01, exposure90plus: 0.387, inquiriesPerObject: 0.009, overdueLeads: 0.358, stage1Share: 0.119, adsWithInquiries: 0.009, stage1Hours: 1987},
+            {office: "Офис71", address: "Адрес71", newContracts: 1.92, agents5plus: 0.077, objectsWithContracts: 20.69, exclusiveShare: 0.045, adsPerAgent: 18.31, contractAdsShare: 0.885, agents10plusAds: 0.615, mlsShare: 0.955, priceReductionShare: 0.113, reductionPercent: -0.009, exposure90plus: 0.613, inquiriesPerObject: 0.004, overdueLeads: 0.614, stage1Share: 0.061, adsWithInquiries: 0.013, stage1Hours: 1829},
+            {office: "Офис72", address: "Адрес72", newContracts: 2.55, agents5plus: 0.182, objectsWithContracts: 21.82, exclusiveShare: 0.575, adsPerAgent: 14, contractAdsShare: 0.642, agents10plusAds: 0.727, mlsShare: 0.708, priceReductionShare: 0.117, reductionPercent: -0.002, exposure90plus: 0.662, inquiriesPerObject: 0.006, overdueLeads: 0.62, stage1Share: 0.025, adsWithInquiries: 0.013, stage1Hours: 4578},
+            {office: "Офис73", address: "Адрес73", newContracts: 6.7, agents5plus: 0.3, objectsWithContracts: 40.1, exclusiveShare: 0.262, adsPerAgent: 22.4, contractAdsShare: 0.559, agents10plusAds: 0.4, mlsShare: 0.613, priceReductionShare: 0.045, reductionPercent: 0.004, exposure90plus: 0.491, inquiriesPerObject: 0.018, overdueLeads: 0.785, stage1Share: 0.246, adsWithInquiries: 0.013, stage1Hours: 6237},
+            {office: "Офис74", address: "Адрес74", newContracts: 7, agents5plus: 0.5, objectsWithContracts: 47.5, exclusiveShare: 0, adsPerAgent: 37, contractAdsShare: 0.779, agents10plusAds: 1, mlsShare: 0.821, priceReductionShare: 0.054, reductionPercent: 0.008, exposure90plus: 0.581, inquiriesPerObject: 0, overdueLeads: 0.636, stage1Share: 0.01, adsWithInquiries: 0.014, stage1Hours: 769},
+            {office: "Офис75", address: "Адрес75", newContracts: 2.5, agents5plus: 0.25, objectsWithContracts: 14.75, exclusiveShare: 0.034, adsPerAgent: 13.75, contractAdsShare: 0.932, agents10plusAds: 0.25, mlsShare: 0.932, priceReductionShare: 0, reductionPercent: -0.001, exposure90plus: 0.636, inquiriesPerObject: 0, overdueLeads: 0.731, stage1Share: 0.118, adsWithInquiries: 0.018, stage1Hours: 10802},
+            {office: "Офис76", address: "Адрес76", newContracts: 5.2, agents5plus: 0.6, objectsWithContracts: 19.8, exclusiveShare: 0, adsPerAgent: 16.8, contractAdsShare: 0.848, agents10plusAds: 0.6, mlsShare: 0.909, priceReductionShare: 0.143, reductionPercent: -0.005, exposure90plus: 0.488, inquiriesPerObject: 0.012, overdueLeads: 0.415, stage1Share: 0.049, adsWithInquiries: 0.024, stage1Hours: 2150},
+            {office: "Офис77", address: "Адрес77", newContracts: 5, agents5plus: 0.4, objectsWithContracts: 9.6, exclusiveShare: 0.271, adsPerAgent: 8.4, contractAdsShare: 0.875, agents10plusAds: 0.6, mlsShare: 0.958, priceReductionShare: 0.357, reductionPercent: -0.016, exposure90plus: 0.381, inquiriesPerObject: 0.048, overdueLeads: 0.194, stage1Share: 0.048, adsWithInquiries: 0.024, stage1Hours: 730},
+            {office: "Офис78", address: "Адрес78", newContracts: 1.64, agents5plus: 0, objectsWithContracts: 10.36, exclusiveShare: 0.675, adsPerAgent: 7.36, contractAdsShare: 0.711, agents10plusAds: 0.273, mlsShare: 0.807, priceReductionShare: 0.074, reductionPercent: 0.001, exposure90plus: 0.654, inquiriesPerObject: 0.025, overdueLeads: 0.707, stage1Share: 0.122, adsWithInquiries: 0.025, stage1Hours: 9510},
+            {office: "Офис79", address: "Адрес79", newContracts: 0.8, agents5plus: 0, objectsWithContracts: 9, exclusiveShare: 0.956, adsPerAgent: 7.8, contractAdsShare: 0.867, agents10plusAds: 0.2, mlsShare: 0.933, priceReductionShare: 0.231, reductionPercent: -0.016, exposure90plus: 0.487, inquiriesPerObject: 0.026, overdueLeads: 0.914, stage1Share: 0.865, adsWithInquiries: 0.026, stage1Hours: 9112},
+            {office: "Офис80", address: "Адрес80", newContracts: 1.14, agents5plus: 0, objectsWithContracts: 18.57, exclusiveShare: 0.1, adsPerAgent: 5.29, contractAdsShare: 0.285, agents10plusAds: 0.143, mlsShare: 0.546, priceReductionShare: 0.135, reductionPercent: -0.004, exposure90plus: 0.649, inquiriesPerObject: 0, overdueLeads: 0.518, stage1Share: 0.155, adsWithInquiries: 0.027, stage1Hours: 6693},
+            {office: "Офис81", address: "Адрес81", newContracts: 9.5, agents5plus: 0.67, objectsWithContracts: 215.5, exclusiveShare: 0.005, adsPerAgent: 55.17, contractAdsShare: 0.256, agents10plusAds: 1, mlsShare: 0.597, priceReductionShare: 0.088, reductionPercent: 0.01, exposure90plus: 0.686, inquiriesPerObject: 0.015, overdueLeads: 0.649, stage1Share: 0.008, adsWithInquiries: 0.027, stage1Hours: 719},
+            {office: "Офис82", address: "Адрес82", newContracts: 3.26, agents5plus: 0.259, objectsWithContracts: 39.78, exclusiveShare: 0.023, adsPerAgent: 10.89, contractAdsShare: 0.273, agents10plusAds: 0.37, mlsShare: 0.551, priceReductionShare: 0.143, reductionPercent: -0.004, exposure90plus: 0.514, inquiriesPerObject: 0.014, overdueLeads: 0.65, stage1Share: 0.127, adsWithInquiries: 0.031, stage1Hours: 7276},
+            {office: "Офис83", address: "Адрес83", newContracts: 2.5, agents5plus: 0.25, objectsWithContracts: 33.5, exclusiveShare: 0, adsPerAgent: 32.5, contractAdsShare: 0.97, agents10plusAds: 0.75, mlsShare: 0.993, priceReductionShare: 0.1, reductionPercent: -0.003, exposure90plus: 0.831, inquiriesPerObject: 0, overdueLeads: 0.022, stage1Share: 0.004, adsWithInquiries: 0.031, stage1Hours: 51},
+            {office: "Офис84", address: "Адрес84", newContracts: 0.43, agents5plus: 0, objectsWithContracts: 7.57, exclusiveShare: 0.189, adsPerAgent: 4.57, contractAdsShare: 0.604, agents10plusAds: 0.143, mlsShare: 0.774, priceReductionShare: 0.063, reductionPercent: -0.001, exposure90plus: 0.75, inquiriesPerObject: 0.031, overdueLeads: 0.771, stage1Share: 0.243, adsWithInquiries: 0.031, stage1Hours: 5073},
+            {office: "Офис85", address: "Адрес85", newContracts: 3.83, agents5plus: 0.33, objectsWithContracts: 15, exclusiveShare: 0.022, adsPerAgent: 10.67, contractAdsShare: 0.711, agents10plusAds: 0.667, mlsShare: 0.922, priceReductionShare: 0.234, reductionPercent: -0.011, exposure90plus: 0.547, inquiriesPerObject: 0.031, overdueLeads: 0.593, stage1Share: 0.046, adsWithInquiries: 0.031, stage1Hours: 3963},
+            {office: "Офис86", address: "Адрес86", newContracts: 1.7, agents5plus: 0.1, objectsWithContracts: 5.4, exclusiveShare: 0.074, adsPerAgent: 3, contractAdsShare: 0.556, agents10plusAds: 0, mlsShare: 1, priceReductionShare: 0.267, reductionPercent: -0.004, exposure90plus: 0.367, inquiriesPerObject: 0, overdueLeads: 0.14, stage1Share: 0.053, adsWithInquiries: 0.033, stage1Hours: 1406},
+            {office: "Офис87", address: "Адрес87", newContracts: 1, agents5plus: 0, objectsWithContracts: 4.5, exclusiveShare: 1, adsPerAgent: 3.75, contractAdsShare: 0.833, agents10plusAds: 0, mlsShare: 0.833, priceReductionShare: 0.167, reductionPercent: -0.002, exposure90plus: 0.567, inquiriesPerObject: 0.067, overdueLeads: 0.59, stage1Share: 0.051, adsWithInquiries: 0.033, stage1Hours: 797},
+            {office: "Офис88", address: "Адрес88", newContracts: 2.46, agents5plus: 0.171, objectsWithContracts: 18.2, exclusiveShare: 0.044, adsPerAgent: 9.09, contractAdsShare: 0.499, agents10plusAds: 0.429, mlsShare: 0.764, priceReductionShare: 0.142, reductionPercent: 0.019, exposure90plus: 0.472, inquiriesPerObject: 0.009, overdueLeads: 0.069, stage1Share: 0.067, adsWithInquiries: 0.035, stage1Hours: 3623},
+            {office: "Офис89", address: "Адрес89", newContracts: 7.5, agents5plus: 0.5, objectsWithContracts: 50.5, exclusiveShare: 0.003, adsPerAgent: 4.33, contractAdsShare: 0.086, agents10plusAds: 0, mlsShare: 0.498, priceReductionShare: 0.154, reductionPercent: -0.001, exposure90plus: 0.192, inquiriesPerObject: 0.154, overdueLeads: 0.07, stage1Share: 0.057, adsWithInquiries: 0.038, stage1Hours: 2495},
+            {office: "Офис90", address: "Адрес90", newContracts: 13.6, agents5plus: 0.6, objectsWithContracts: 20.4, exclusiveShare: 0.029, adsPerAgent: 14.8, contractAdsShare: 0.725, agents10plusAds: 0.6, mlsShare: 0.922, priceReductionShare: 0.149, reductionPercent: -0.001, exposure90plus: 0.081, inquiriesPerObject: 0.027, overdueLeads: 0.247, stage1Share: 0.21, adsWithInquiries: 0.041, stage1Hours: 586},
+            {office: "Офис91", address: "Адрес91", newContracts: 5.2, agents5plus: 0.4, objectsWithContracts: 38.6, exclusiveShare: 0.031, adsPerAgent: 33.6, contractAdsShare: 0.87, agents10plusAds: 1, mlsShare: 0.927, priceReductionShare: 0.119, reductionPercent: -0.006, exposure90plus: 0.756, inquiriesPerObject: 0.018, overdueLeads: 0.688, stage1Share: 0.046, adsWithInquiries: 0.042, stage1Hours: 5869},
+            {office: "Офис92", address: "Адрес92", newContracts: 1.2, agents5plus: 0.05, objectsWithContracts: 6.25, exclusiveShare: 0.704, adsPerAgent: 5.9, contractAdsShare: 0.944, agents10plusAds: 0.15, mlsShare: 0.904, priceReductionShare: 0.22, reductionPercent: -0.003, exposure90plus: 0.619, inquiriesPerObject: 0.017, overdueLeads: 0.62, stage1Share: 0.146, adsWithInquiries: 0.042, stage1Hours: 6429},
+            {office: "Офис93", address: "Адрес93", newContracts: 4.5, agents5plus: 0.33, objectsWithContracts: 75.21, exclusiveShare: 0.008, adsPerAgent: 48.67, contractAdsShare: 0.647, agents10plusAds: 0.792, mlsShare: 0.716, priceReductionShare: 0.033, reductionPercent: 0.93, exposure90plus: 0.722, inquiriesPerObject: 0.015, overdueLeads: 0.759, stage1Share: 0.124, adsWithInquiries: 0.043, stage1Hours: 5633},
+            {office: "Офис94", address: "Адрес94", newContracts: 2.4, agents5plus: 0.2, objectsWithContracts: 12.8, exclusiveShare: 0, adsPerAgent: 9, contractAdsShare: 0.703, agents10plusAds: 0.2, mlsShare: 0.891, priceReductionShare: 0.2, reductionPercent: -0.015, exposure90plus: 0.556, inquiriesPerObject: 0.067, overdueLeads: 0.208, stage1Share: 0.069, adsWithInquiries: 0.044, stage1Hours: 7439},
+            {office: "Офис95", address: "Адрес95", newContracts: 1.25, agents5plus: 0, objectsWithContracts: 20.75, exclusiveShare: 0.012, adsPerAgent: 10.75, contractAdsShare: 0.518, agents10plusAds: 0.5, mlsShare: 0.75, priceReductionShare: 0.07, reductionPercent: -0.008, exposure90plus: 0.535, inquiriesPerObject: 0.047, overdueLeads: 0.624, stage1Share: 0.238, adsWithInquiries: 0.047, stage1Hours: 2107},
+            {office: "Офис96", address: "Адрес96", newContracts: 5, agents5plus: 0.5, objectsWithContracts: 11.25, exclusiveShare: 0, adsPerAgent: 10.5, contractAdsShare: 0.933, agents10plusAds: 0.25, mlsShare: 0.956, priceReductionShare: 0.095, reductionPercent: -0.001, exposure90plus: 0.381, inquiriesPerObject: 0.048, overdueLeads: 0.662, stage1Share: 0.588, adsWithInquiries: 0.048, stage1Hours: 6599},
+            {office: "Офис97", address: "Адрес97", newContracts: 1.2, agents5plus: 0, objectsWithContracts: 16.2, exclusiveShare: 0, adsPerAgent: 12.6, contractAdsShare: 0.778, agents10plusAds: 0.4, mlsShare: 0.926, priceReductionShare: 0.111, reductionPercent: -0.01, exposure90plus: 0.778, inquiriesPerObject: 0.016, overdueLeads: 0.415, stage1Share: 0.252, adsWithInquiries: 0.048, stage1Hours: 4802},
+            {office: "Офис98", address: "Адрес98", newContracts: 2.25, agents5plus: 0.25, objectsWithContracts: 18, exclusiveShare: 0.264, adsPerAgent: 4.75, contractAdsShare: 0.264, agents10plusAds: 0, mlsShare: 0.425, priceReductionShare: 0.158, reductionPercent: 0.003, exposure90plus: 0.421, inquiriesPerObject: 0.158, overdueLeads: 0.97, stage1Share: 0.871, adsWithInquiries: 0.053, stage1Hours: 11390},
+            {office: "Офис99", address: "Адрес99", newContracts: 0.11, agents5plus: 0, objectsWithContracts: 4, exclusiveShare: 0.167, adsPerAgent: 2.11, contractAdsShare: 0.528, agents10plusAds: 0, mlsShare: 0.556, priceReductionShare: 0.105, reductionPercent: -0.004, exposure90plus: 0.684, inquiriesPerObject: 0.105, overdueLeads: 0.858, stage1Share: 0.672, adsWithInquiries: 0.053, stage1Hours: 10265},
+            {office: "Офис100", address: "Адрес100", newContracts: 2.5, agents5plus: 0.25, objectsWithContracts: 4.75, exclusiveShare: 0, adsPerAgent: 4.75, contractAdsShare: 1, agents10plusAds: 0.25, mlsShare: 1, priceReductionShare: 0.158, reductionPercent: -0.006, exposure90plus: 0.368, inquiriesPerObject: 0.053, overdueLeads: 0.429, stage1Share: 0, adsWithInquiries: 0.053, stage1Hours: null}
+        ];
+
+        // Определение метрик
+        const metrics = [
+            {key: 'newContracts', label: 'Новые договоры на агента (30 дн)', priority: true, desc: 'Кол-во новых договоров за 30 дней на 1 агента'},
+            {key: 'agents5plus', label: 'Доля агентов с 5+ договорами', priority: false, desc: 'Доля агентов с более 5 новыми договорами'},
+            {key: 'objectsWithContracts', label: 'Объекты с договорами на агента', priority: false, desc: 'Кол-во объектов с договоренностями на 1 агента'},
+            {key: 'exclusiveShare', label: 'Доля объектов с эксклюзивом', priority: false, desc: 'Доля объектов с эксклюзивным договором'},
+            {key: 'adsPerAgent', label: 'Объектов в рекламе на агента', priority: false, desc: 'Кол-во объектов в рекламе на 1 агента'},
+            {key: 'contractAdsShare', label: 'Доля с договором в рекламе', priority: false, desc: 'Доля объектов с договоренностью в рекламе'},
+            {key: 'agents10plusAds', label: 'Агенты с 10+ объектами в рекламе', priority: false, desc: 'Доля агентов с 10 и более объектами в рекламе'},
+            {key: 'mlsShare', label: 'Доля объектов в МЛС', priority: false, desc: 'Доля объектов в МЛС от общего числа'},
+            {key: 'priceReductionShare', label: 'Доля со снижением цены', priority: false, desc: 'Доля объектов в рекламе со сниженной ценой'},
+            {key: 'reductionPercent', label: '% снижения цены', priority: false, desc: 'Процент снижения цены объектов в рекламе'},
+            {key: 'exposure90plus', label: 'Экспозиция >90 дней', priority: false, desc: 'Доля объектов в рекламе с экспозицей более 90 дней'},
+            {key: 'inquiriesPerObject', label: 'Обращений на 1 объект', priority: false, desc: 'Кол-во обращений на 1 объект'},
+            {key: 'overdueLeads', label: '🔥 Доля просроченных лидов', priority: true, desc: 'Доля просроченных лидов (критично!)'},
+            {key: 'stage1Share', label: '🔥 Доля на 1-й стадии', priority: true, desc: 'Доля объектов на первой стадии воронки (застой)'},
+            {key: 'adsWithInquiries', label: 'Доля с обращениями в рекламе', priority: false, desc: 'Доля объектов в рекламе с обращениями'},
+            {key: 'stage1Hours', label: 'Часов на 1-й стадии', priority: false, desc: 'Среднее кол-во часов на первой стадии воронки'}
+        ];
+
+        let currentMetric = metrics[12]; // overdueLeads по умолчанию
+        let chart = null;
+        let currentTab = 'bad';
+
+        // Инициализация
+        function init() {
+            renderMetricsButtons();
+            selectMetric(metrics[12]); // Просроченные лиды по умолчанию
+        }
+
+        function renderMetricsButtons() {
+            const container = document.getElementById('metricsButtons');
+            container.innerHTML = metrics.map(m => `
+                <button class="metric-btn ${m.key === currentMetric.key ? 'active' : ''} ${m.priority ? 'priority' : ''}" 
+                        onclick='selectMetric(${JSON.stringify(m).replace(/'/g, "&#39;")})'>
+                    ${m.priority ? '🔥 ' : ''}${m.label}
+                </button>
+            `).join('');
+        }
+
+        function selectMetric(metric) {
+            currentMetric = metric;
+            renderMetricsButtons();
+            updateChart();
+            autoCalculateNorms();
+        }
+
+        function getValues(metricKey) {
+            return rawData
+                .map(d => d[metricKey])
+                .filter(v => v !== null && v !== undefined && !isNaN(v));
+        }
+
+        function updateChart() {
+            const values = getValues(currentMetric.key);
+            const stats = calculateStats(values);
+            
+            // Обновление статистики
+            document.getElementById('statMean').textContent = stats.mean.toFixed(2);
+            document.getElementById('statMedian').textContent = stats.median.toFixed(2);
+            document.getElementById('statMin').textContent = stats.min.toFixed(2);
+            document.getElementById('statMax').textContent = stats.max.toFixed(2);
+
+            // Создание гистограммы
+            const bins = createHistogram(values);
+            
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: bins.labels,
+                    datasets: [{
+                        label: 'Количество офисов',
+                        data: bins.counts,
+                        backgroundColor: bins.colors,
+                        borderColor: bins.borderColors,
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: `Распределение: ${currentMetric.desc}`,
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Количество офисов' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Значение метрики' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function calculateStats(values) {
+            const sorted = [...values].sort((a, b) => a - b);
+            const n = sorted.length;
+            const sum = sorted.reduce((a, b) => a + b, 0);
+            const mean = sum / n;
+            const median = n % 2 === 0 ? (sorted[n/2 - 1] + sorted[n/2]) / 2 : sorted[Math.floor(n/2)];
+            
+            return {
+                mean: mean,
+                median: median,
+                min: sorted[0],
+                max: sorted[n-1],
+                p25: sorted[Math.floor(n * 0.25)],
+                p75: sorted[Math.floor(n * 0.75)]
+            };
+        }
+
+        function createHistogram(values) {
+            const stats = calculateStats(values);
+            const min = stats.min;
+            const max = stats.max;
+            const range = max - min;
+            const binCount = Math.min(20, Math.ceil(Math.sqrt(values.length)));
+            const binWidth = range / binCount;
+            
+            const bins = new Array(binCount).fill(0);
+            const labels = [];
+            const colors = [];
+            const borderColors = [];
+            
+            for (let i = 0; i < binCount; i++) {
+                const binMin = min + i * binWidth;
+                const binMax = min + (i + 1) * binWidth;
+                labels.push(`${binMin.toFixed(1)}-${binMax.toFixed(1)}`);
+                
+                // Определение цвета на основе текущих нормативов
+                const binCenter = (binMin + binMax) / 2;
+                const badThreshold = parseFloat(document.getElementById('badThreshold').value) || stats.p25;
+                const goodThreshold = parseFloat(document.getElementById('goodThreshold').value) || stats.p75;
+                
+                // Для просроченных лидов и стадии 1: меньше = лучше, иначе больше = лучше
+                const isInverted = ['overdueLeads', 'stage1Share', 'exposure90plus', 'reductionPercent'].includes(currentMetric.key);
+                
+                let color, borderColor;
+                if (isInverted) {
+                    if (binCenter <= badThreshold) {
+                        color = 'rgba(198, 246, 213, 0.8)'; // good - зеленый
+                        borderColor = '#68d391';
+                    } else if (binCenter >= goodThreshold) {
+                        color = 'rgba(254, 215, 215, 0.8)'; // bad - красный
+                        borderColor = '#fc8181';
+                    } else {
+                        color = 'rgba(254, 235, 200, 0.8)'; // normal - желтый
+                        borderColor = '#f6ad55';
+                    }
+                } else {
+                    if (binCenter <= badThreshold) {
+                        color = 'rgba(254, 215, 215, 0.8)'; // bad
+                        borderColor = '#fc8181';
+                    } else if (binCenter >= goodThreshold) {
+                        color = 'rgba(198, 246, 213, 0.8)'; // good
+                        borderColor = '#68d391';
+                    } else {
+                        color = 'rgba(254, 235, 200, 0.8)'; // normal
+                        borderColor = '#f6ad55';
+                    }
+                }
+                
+                colors.push(color);
+                borderColors.push(borderColor);
+            }
+            
+            values.forEach(v => {
+                const binIndex = Math.min(Math.floor((v - min) / binWidth), binCount - 1);
+                bins[binIndex]++;
+            });
+            
+            return { labels, counts: bins, colors, borderColors };
+        }
+
+        function autoCalculateNorms() {
+            const values = getValues(currentMetric.key);
+            const stats = calculateStats(values);
+            
+            const isInverted = ['overdueLeads', 'stage1Share', 'exposure90plus', 'reductionPercent'].includes(currentMetric.key);
+            
+            if (isInverted) {
+                // Для инвертированных метрик: меньше значение = лучше
+                document.getElementById('badThreshold').value = stats.p75.toFixed(3);
+                document.getElementById('normalThreshold').value = stats.p25.toFixed(3);
+                document.getElementById('goodThreshold').value = stats.p25.toFixed(3);
+                
+                document.getElementById('badRange').textContent = `> ${stats.p75.toFixed(3)} (плохо)`;
+                document.getElementById('normalRange').textContent = `${stats.p25.toFixed(3)} - ${stats.p75.toFixed(3)}`;
+                document.getElementById('goodRange').textContent = `< ${stats.p25.toFixed(3)} (хорошо)`;
+            } else {
+                // Для обычных метрик: больше значение = лучше
+                document.getElementById('badThreshold').value = stats.p25.toFixed(3);
+                document.getElementById('normalThreshold').value = stats.p75.toFixed(3);
+                document.getElementById('goodThreshold').value = stats.p75.toFixed(3);
+                
+                document.getElementById('badRange').textContent = `< ${stats.p25.toFixed(3)} (плохо)`;
+                document.getElementById('normalRange').textContent = `${stats.p25.toFixed(3)} - ${stats.p75.toFixed(3)}`;
+                document.getElementById('goodRange').textContent = `> ${stats.p75.toFixed(3)} (хорошо)`;
+            }
+            
+            updateOffices();
+            updateChart();
+        }
+
+        function updateOffices() {
+            const badThreshold = parseFloat(document.getElementById('badThreshold').value);
+            const goodThreshold = parseFloat(document.getElementById('goodThreshold').value);
+            const isInverted = ['overdueLeads', 'stage1Share', 'exposure90plus', 'reductionPercent'].includes(currentMetric.key);
+            
+            const badOffices = [];
+            const normalOffices = [];
+            const goodOffices = [];
+            
+            rawData.forEach(office => {
+                const value = office[currentMetric.key];
+                if (value === null || value === undefined) return;
+                
+                let category;
+                if (isInverted) {
+                    if (value > badThreshold) category = 'bad';
+                    else if (value < goodThreshold) category = 'good';
+                    else category = 'normal';
+                } else {
+                    if (value < badThreshold) category = 'bad';
+                    else if (value > goodThreshold) category = 'good';
+                    else category = 'normal';
+                }
+                
+                const officeData = { name: office.office, value: value };
+                if (category === 'bad') badOffices.push(officeData);
+                else if (category === 'normal') normalOffices.push(officeData);
+                else goodOffices.push(officeData);
+            });
+            
+            // Сортировка по значению
+            const sortFn = isInverted ? (a, b) => b.value - a.value : (a, b) => a.value - b.value;
+            badOffices.sort(sortFn);
+            normalOffices.sort(sortFn);
+            goodOffices.sort(sortFn);
+            
+            document.getElementById('badCount').textContent = badOffices.length;
+            document.getElementById('normalCount').textContent = normalOffices.length;
+            document.getElementById('goodCount').textContent = goodOffices.length;
+            
+            renderOfficesList(currentTab === 'bad' ? badOffices : currentTab === 'normal' ? normalOffices : goodOffices);
+        }
+
+        function renderOfficesList(offices) {
+            const container = document.getElementById('officesList');
+            container.innerHTML = offices.map(o => `
+                <div class="office-tag ${currentTab}">
+                    <span>${o.name}</span>
+                    <span class="office-value">${o.value.toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            updateOffices();
+        }
+
+        // Запуск
+        init();
+    </script>
+</body>
+</html>
