@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд расторжений — Superset Style</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Header как в Superset */
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* Dashboard container */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Grid system как в Superset (12 колонок) */
+        .grid-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .grid-col-3 { width: 25%; }
+        .grid-col-6 { width: 50%; }
+        .grid-col-12 { width: 100%; }
+
+        /* Card стиль Superset */
+        .card {
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #e8e8e8;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        /* Big Number стиль */
+        .big-number-container {
+            text-align: center;
+            padding: 20px 16px;
+        }
+
+        .big-number {
+            font-size: 42px;
+            font-weight: 700;
+            color: #333;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .big-number.red { color: #d62728; }
+        .big-number.green { color: #2ca02c; }
+        .big-number.blue { color: #1f77b4; }
+        .big-number.orange { color: #ff7f0e; }
+
+        .big-number-subheader {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #f5f5f5;
+        }
+
+        .trend-up { color: #2ca02c; }
+        .trend-down { color: #d62728; }
+
+        /* Chart containers */
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-wrapper-small {
+            height: 250px;
+        }
+
+        /* Table стиль Superset */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .data-table th {
+            background: #fafafa;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e8e8e8;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background: #fafafa;
+        }
+
+        /* Cell bars как в Superset */
+        .cell-bar-container {
+            position: relative;
+            width: 100%;
+            height: 20px;
+            background: #f5f5f5;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .cell-bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .cell-bar.red { background: #ffccc7; }
+        .cell-bar.green { background: #d9f7be; }
+        .cell-bar.blue { background: #bae0ff; }
+
+        .cell-bar-value {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-red { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+        .badge-green { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+        .badge-yellow { background: #fffbe6; color: #d48806; border: 1px solid #ffe58f; }
+
+        /* Tabs как в Superset */
+        .tabs-container {
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0 24px;
+            margin-bottom: 24px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .tab-btn.active {
+            color: #1f77b4;
+            border-bottom-color: #1f77b4;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Filters panel */
+        .filters-panel {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            background: #fff;
+            min-width: 150px;
+        }
+
+        /* Heatmap стиль */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: 100px repeat(14, 1fr);
+            gap: 1px;
+            background: #e8e8e8;
+            border: 1px solid #e8e8e8;
+            font-size: 12px;
+        }
+
+        .heatmap-cell {
+            background: #fff;
+            padding: 8px 4px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .heatmap-header {
+            background: #fafafa;
+            font-weight: 600;
+            color: #333;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 8px 4px;
+        }
+
+        .heatmap-row-header {
+            background: #fafafa;
+            font-weight: 600;
+            color: #333;
+            text-align: left;
+            padding-left: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-row {
+                flex-direction: column;
+            }
+            .grid-col-3, .grid-col-6, .grid-col-12 {
+                width: 100%;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="header">
+        <h1>Дашборд расторжений и переуступок</h1>
+        <p>Когортный анализ заявок • Январь 2025 — Февраль 2026</p>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('rastorzhenie')">Расторжения</button>
+            <button class="tab-btn" onclick="switchTab('pereustupki')">Переуступки</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">Аналитика</button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <!-- Фильтры -->
+        <div class="filters-panel">
+            <div class="filter-group">
+                <label>Период</label>
+                <select id="period-filter" onchange="updateDashboard()">
+                    <option value="all">Все месяцы</option>
+                    <option value="q1">Q1 2025</option>
+                    <option value="q2">Q2 2025</option>
+                    <option value="q3">Q3 2025</option>
+                    <option value="q4">Q4 2025</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Статус</label>
+                <select id="status-filter" onchange="updateDashboard()">
+                    <option value="all">Все статусы</option>
+                    <option value="terminated">Расторгнуто</option>
+                    <option value="cancelled">Отменено</option>
+                    <option value="inwork">В работе</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Вкладка Расторжения -->
+        <div id="rastorzhenie" class="tab-content active">
+            <!-- KPI Row -->
+            <div class="grid-row">
+                <div class="grid-col-3">
+                    <div class="card">
+                        <div class="card-header">Всего расторжений</div>
+                        <div class="card-body">
+                            <div class="big-number-container">
+                                <div class="big-number red">251</div>
+                                <div class="big-number-subheader">75% от общего числа</div>
+                                <div class="trend-indicator trend-down">
+                                    <span>↓</span> 12% к прошлому месяцу
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-col-3">
+                    <div class="card">
+                        <div class="card-header">Отменено</div>
+                        <div class="card-body">
+                            <div class="big-number-container">
+                                <div class="big-number green">45</div>
+                                <div class="big-number-subheader">13% удержано</div>
+                                <div class="trend-indicator trend-up">
+                                    <span>↑</span> 5% к прошлому месяцу
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-col-3">
+                    <div class="card">
+                        <div class="card-header">В работе</div>
+                        <div class="card-body">
+                            <div class="big-number-container">
+                                <div class="big-number blue">27</div>
+                                <div class="big-number-subheader">8% на стадии обработки</div>
+                                <div class="trend-indicator">
+                                    <span>→</span> Без изменений
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-col-3">
+                    <div class="card">
+                        <div class="card-header">Средняя конверсия</div>
+                        <div class="card-body">
+                            <div class="big-number-container">
+                                <div class="big-number orange">68%</div>
+                                <div class="big-number-subheader">Средний % расторжения</div>
+                                <div class="trend-indicator trend-up">
+                                    <span>↑</span> От пика 96%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Chart -->
+            <div class="grid-row">
+                <div class="grid-col-12">
+                    <div class="card">
+                        <div class="card-header">Динамика расторжений по месяцам</div>
+                        <div class="card-body">
+                            <div class="chart-wrapper">
+                                <canvas id="mainChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pie + Line -->
+            <div class="grid-row">
+                <div class="grid-col-6">
+                    <div class="card">
+                        <div class="card-header">Структура исходов</div>
+                        <div class="card-body">
+                            <div class="chart-wrapper chart-wrapper-small">
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-col-6">
+                    <div class="card">
+                        <div class="card-header">Динамика % по когортам</div>
+                        <div class="card-body">
+                            <div class="chart-wrapper chart-wrapper-small">
+                                <canvas id="lineChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heatmap -->
+            <div class="grid-row">
+                <div class="grid-col-12">
+                    <div class="card">
+                        <div class="card-header">Тепловая карта: Статусы по месяцам</div>
+                        <div class="card-body">
+                            <div class="heatmap-grid" id="heatmap">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="grid-row">
+                <div class="grid-col-12">
+                    <div class="card">
+                        <div class="card-header">Детальная таблица по месяцам</div>
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table class="data-table" id="detailTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Месяц</th>
+                                            <th>Всего заявок</th>
+                                            <th>Расторгнуто</th>
+                                            <th>Отменено</th>
+                                            <th>В работе</th>
+                                            <th>% расторжения</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Переуступки -->
+        <div id="pereustupki" class="tab-content">
+            <div class="grid-row">
+                <div class="grid-col-3">
+                    <div class="card">
+                        <div class="card-header">Расторгнуто</div>
+                        <div class="card-body">
+                            <div class="big-number-container">
+                                <div class="big-number red">29</div>
+                                <div class="big-number-subheader">40% от общего числа</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-col-3">
+                    <div class="card">
+                        <div class="card-header">Реализовано</div>
+                        <div class="card-body">
+                            <div class="big-number-container">
+                                <div class="big-number green">44</div>
+                                <div class="big-number-subheader">35% успешных</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-col-3">
+                    <div class="card">
+                        <div class="card-header">В работе</div>
+                        <div class="card-body">
+                            <div class="big-number-container">
+                                <div class="big-number blue">20</div>
+                                <div class="big-number-subheader">9% на стадии обработки</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-col-3">
+                    <div class="card">
+                        <div class="card-header">Эффективность</div>
+                        <div class="card-body">
+                            <div class="big-number-container">
+                                <div class="big-number orange">60%</div>
+                                <div class="big-number-subheader">Конверсия в реализацию</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-row">
+                <div class="grid-col-12">
+                    <div class="card">
+                        <div class="card-header">Динамика переуступок</div>
+                        <div class="card-body">
+                            <div class="chart-wrapper">
+                                <canvas id="pereChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Аналитика -->
+        <div id="analytics" class="tab-content">
+            <div class="grid-row">
+                <div class="grid-col-12">
+                    <div class="card">
+                        <div class="card-header">Сравнительный анализ: Расторжения vs Переуступки</div>
+                        <div class="card-body">
+                            <div class="chart-wrapper">
+                                <canvas id="compareChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const months = ['Янв 25', 'Фев 25', 'Мар 25', 'Апр 25', 'Май 25', 'Июн 25', 
+                       'Июл 25', 'Авг 25', 'Сен 25', 'Окт 25', 'Ноя 25', 'Дек 25',
+                       'Янв 26', 'Фев 26'];
+
+        const rastData = {
+            rastorzhenie: [59, 36, 26, 24, 24, 14, 9, 21, 8, 16, 5, 7, 2, 0],
+            otmena: [6, 2, 2, 5, 1, 4, 6, 4, 6, 3, 6, 0, 0, 0],
+            work: [0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 12, 16, 4, 0],
+            podpisanie: [0, 0, 0, 0, 0, 0, 0, 2, 3, 1, 6, 1, 0, 0],
+            total: [66, 38, 28, 29, 25, 18, 15, 25, 16, 23, 16, 18, 19, 1]
+        };
+
+        const pereData = {
+            rastorgnut: [4, 4, 12, 1, 3, 2, 2, 1, 0, 0, 0, 0, 0, 0],
+            realizovano: [2, 4, 7, 2, 2, 2, 3, 5, 4, 8, 4, 1, 0, 0],
+            vRabote: [1, 0, 1, 1, 0, 4, 2, 1, 2, 5, 3, 0, 0, 0],
+            total: [9, 10, 22, 6, 5, 8, 9, 10, 7, 10, 10, 6, 1, 1]
+        };
+
+        // Chart.js defaults для стиля Superset
+        Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#666';
+
+        // Цвета Superset
+        const colors = {
+            primary: '#1f77b4',
+            red: '#d62728',
+            green: '#2ca02c',
+            blue: '#1f77b4',
+            orange: '#ff7f0e',
+            purple: '#9467bd',
+            gray: '#7f7f7f'
+        };
+
+        // Main Bar Chart
+        const ctxMain = document.getElementById('mainChart').getContext('2d');
+        new Chart(ctxMain, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Расторгнуто',
+                    data: rastData.rastorzhenie,
+                    backgroundColor: colors.red,
+                    borderWidth: 0
+                }, {
+                    label: 'Отменено',
+                    data: rastData.otmena,
+                    backgroundColor: colors.green,
+                    borderWidth: 0
+                }, {
+                    label: 'В работе',
+                    data: rastData.work,
+                    backgroundColor: colors.blue,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 10
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(255,255,255,0.95)',
+                        titleColor: '#333',
+                        bodyColor: '#333',
+                        borderColor: '#e0e0e0',
+                        borderWidth: 1,
+                        padding: 12
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f0f0f0' },
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // Pie Chart
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Расторгнуто', 'Отменено', 'В работе', 'На подписании'],
+                datasets: [{
+                    data: [251, 45, 27, 13],
+                    backgroundColor: [colors.red, colors.green, colors.blue, colors.orange],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                return data.labels.map((label, i) => ({
+                                    text: `${label}: ${data.datasets[0].data[i]} (${Math.round(data.datasets[0].data[i]/total*100)}%)`,
+                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                    hidden: false,
+                                    index: i
+                                }));
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Line Chart
+        const ctxLine = document.getElementById('lineChart').getContext('2d');
+        const pctTerminated = rastData.total.map((t, i) => t > 0 ? Math.round(rastData.rastorzhenie[i]/t*100) : 0);
+        const pctRetained = rastData.total.map((t, i) => t > 0 ? Math.round(rastData.otmena[i]/t*100) : 0);
+
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: '% расторгнутых',
+                    data: pctTerminated,
+                    borderColor: colors.red,
+                    backgroundColor: 'rgba(214, 39, 40, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4
+                }, {
+                    label: '% удержанных',
+                    data: pctRetained,
+                    borderColor: colors.green,
+                    backgroundColor: 'rgba(44, 160, 44, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: { color: '#f0f0f0' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Pereustupki Chart
+        const ctxPere = document.getElementById('pereChart').getContext('2d');
+        new Chart(ctxPere, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Расторгнуто',
+                    data: pereData.rastorgnut,
+                    backgroundColor: colors.red
+                }, {
+                    label: 'Реализовано',
+                    data: pereData.realizovano,
+                    backgroundColor: colors.green
+                }, {
+                    label: 'В работе',
+                    data: pereData.vRabote,
+                    backgroundColor: colors.blue
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', align: 'end' }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: '#f0f0f0' } }
+                }
+            }
+        });
+
+        // Compare Chart
+        const ctxCompare = document.getElementById('compareChart').getContext('2d');
+        new Chart(ctxCompare, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Расторжения',
+                    data: rastData.total,
+                    backgroundColor: colors.red
+                }, {
+                    label: 'Переуступки',
+                    data: pereData.total,
+                    backgroundColor: colors.blue
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', align: 'end' }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: '#f0f0f0' } }
+                }
+            }
+        });
+
+        // Heatmap
+        function createHeatmap() {
+            const heatmap = document.getElementById('heatmap');
+            const statuses = ['Расторгнуто', 'Отменено', 'В работе'];
+            const data = [rastData.rastorzhenie, rastData.otmena, rastData.work];
+
+            // Header row
+            heatmap.innerHTML = '<div class="heatmap-row-header">Статус</div>';
+            months.forEach(m => {
+                heatmap.innerHTML += `<div class="heatmap-header">${m}</div>`;
+            });
+
+            // Data rows
+            statuses.forEach((status, rowIdx) => {
+                heatmap.innerHTML += `<div class="heatmap-row-header">${status}</div>`;
+                data[rowIdx].forEach((val, colIdx) => {
+                    const maxVal = Math.max(...data[rowIdx]);
+                    const intensity = maxVal > 0 ? val / maxVal : 0;
+                    let bgColor;
+                    if (rowIdx === 0) bgColor = `rgba(214, 39, 40, ${0.1 + intensity * 0.9})`;
+                    else if (rowIdx === 1) bgColor = `rgba(44, 160, 44, ${0.1 + intensity * 0.9})`;
+                    else bgColor = `rgba(31, 119, 180, ${0.1 + intensity * 0.9})`;
+
+                    const textColor = intensity > 0.5 ? '#fff' : '#333';
+
+                    heatmap.innerHTML += `
+                        <div class="heatmap-cell" style="background: ${bgColor}; color: ${textColor}">
+                            ${val > 0 ? val : '-'}
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Table
+        function fillTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            months.forEach((month, i) => {
+                const total = rastData.total[i];
+                const term = rastData.rastorzhenie[i];
+                const cancel = rastData.otmena[i];
+                const work = rastData.work[i];
+                const pct = total > 0 ? Math.round(term / total * 100) : 0;
+
+                let badgeClass = pct > 80 ? 'badge-red' : pct > 50 ? 'badge-yellow' : 'badge-green';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${month}</strong></td>
+                        <td>${total}</td>
+                        <td>${term}</td>
+                        <td>${cancel}</td>
+                        <td>${work}</td>
+                        <td>
+                            <div class="cell-bar-container">
+                                <div class="cell-bar ${pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green'}" style="width: ${pct}%"></div>
+                                <span class="cell-bar-value">${pct}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Filter update
+        function updateDashboard() {
+            console.log('Filters updated');
+        }
+
+        // Init
+        createHeatmap();
+        fillTable();
+    </script>
+</body>
+</html>
