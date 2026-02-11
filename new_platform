@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рынок действий внутри сделки</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .flow-arrow {
+            stroke-dasharray: 8;
+            animation: flow 2s linear infinite;
+        }
+        
+        @keyframes flow {
+            to {
+                stroke-dashoffset: -16;
+            }
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 20px rgba(99, 102, 241, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+        
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .platform-glow {
+            box-shadow: 0 0 60px rgba(99, 102, 241, 0.3);
+        }
+        
+        .action-card {
+            transition: all 0.3s ease;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .percent-badge {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+        
+        .money-pulse {
+            animation: money-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes money-pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen p-8">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-slate-800 mb-4">Рынок действий внутри сделки</h1>
+            <p class="text-xl text-slate-600">Uber-модель для агентства недвижимости</p>
+        </div>
+
+        <!-- Main Container -->
+        <div class="relative bg-white rounded-3xl shadow-2xl p-12 overflow-hidden">
+            
+            <!-- Background Grid -->
+            <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#6366f1 1px, transparent 1px); background-size: 30px 30px;"></div>
+            
+            <!-- Level 1: Agency (Top) -->
+            <div class="relative z-10 mb-12">
+                <div class="flex justify-center">
+                    <div class="bg-gradient-to-br from-indigo-600 to-purple-700 text-white rounded-2xl p-8 w-full max-w-3xl hover-lift cursor-pointer relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
+                        
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="p-3 bg-white/20 rounded-xl">
+                                <i data-lucide="building-2" class="w-8 h-8"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold">Агентство недвижимости</h2>
+                                <p class="text-indigo-200">Оператор платформы</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div class="flex items-center gap-2 bg-white/10 rounded-lg p-3">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                <span>Набирает агентов</span>
+                            </div>
+                            <div class="flex items-center gap-2 bg-white/10 rounded-lg p-3">
+                                <i data-lucide="settings" class="w-4 h-4"></i>
+                                <span>Определяет условия</span>
+                            </div>
+                            <div class="flex items-center gap-2 bg-white/10 rounded-lg p-3">
+                                <i data-lucide="percent" class="w-4 h-4"></i>
+                                <span>Устанавливает % с сделки</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Arrow Down -->
+                <div class="flex justify-center my-4">
+                    <svg width="40" height="60" class="opacity-60">
+                        <line x1="20" y1="0" x2="20" y2="50" stroke="#6366f1" stroke-width="2" class="flow-arrow"/>
+                        <polygon points="20,60 10,45 30,45" fill="#6366f1"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Level 2: Platform (Center) -->
+            <div class="relative z-10 mb-12">
+                <div class="flex justify-center">
+                    <div class="bg-white border-2 border-indigo-500 rounded-3xl p-8 w-full platform-glow relative">
+                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-semibold">
+                            Цифровая платформа • Рынок действий
+                        </div>
+                        
+                        <!-- Platform Functions -->
+                        <div class="grid grid-cols-4 gap-6 mb-8 mt-4">
+                            <div class="text-center group cursor-pointer">
+                                <div class="w-16 h-16 mx-auto bg-indigo-100 rounded-2xl flex items-center justify-center mb-2 group-hover:bg-indigo-200 transition-colors">
+                                    <i data-lucide="route" class="w-8 h-8 text-indigo-600"></i>
+                                </div>
+                                <p class="text-xs font-medium text-slate-600">Диспетчер задач</p>
+                            </div>
+                            <div class="text-center group cursor-pointer">
+                                <div class="w-16 h-16 mx-auto bg-purple-100 rounded-2xl flex items-center justify-center mb-2 group-hover:bg-purple-200 transition-colors">
+                                    <i data-lucide="clipboard-check" class="w-8 h-8 text-purple-600"></i>
+                                </div>
+                                <p class="text-xs font-medium text-slate-600">Фиксация действий</p>
+                            </div>
+                            <div class="text-center group cursor-pointer">
+                                <div class="w-16 h-16 mx-auto bg-emerald-100 rounded-2xl flex items-center justify-center mb-2 group-hover:bg-emerald-200 transition-colors">
+                                    <i data-lucide="split" class="w-8 h-8 text-emerald-600"></i>
+                                </div>
+                                <p class="text-xs font-medium text-slate-600">Авто-сплитование</p>
+                            </div>
+                            <div class="text-center group cursor-pointer">
+                                <div class="w-16 h-16 mx-auto bg-amber-100 rounded-2xl flex items-center justify-center mb-2 group-hover:bg-amber-200 transition-colors">
+                                    <i data-lucide="bar-chart-3" class="w-8 h-8 text-amber-600"></i>
+                                </div>
+                                <p class="text-xs font-medium text-slate-600">Данные и аналитика</p>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Deal Chain -->
+                        <div class="bg-slate-50 rounded-2xl p-6 relative overflow-hidden">
+                            <div class="absolute top-2 right-2 text-xs text-slate-400 font-medium">Цепочка сделки</div>
+                            
+                            <div class="space-y-4">
+                                <!-- Step 1 -->
+                                <div class="action-card bg-white border-l-4 border-indigo-400 rounded-r-xl p-4 shadow-sm cursor-pointer group">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                                    <i data-lucide="phone-call" class="w-4 h-4 text-indigo-600"></i>
+                                                </div>
+                                                <h3 class="font-semibold text-slate-800">Привёл продавца</h3>
+                                                <span class="percent-badge text-white text-xs px-2 py-1 rounded-full font-bold">15%</span>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">
+                                                Холодные звонки и отмечаем тех, кто <span class="font-medium text-indigo-600">готов к встрече</span> или тех, кто <span class="font-medium text-indigo-600">согласен на продажу устно</span>. Продашь — получишь комиссию.
+                                            </p>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-indigo-400 transition-colors"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2 -->
+                                <div class="action-card bg-white border-l-4 border-purple-400 rounded-r-xl p-4 shadow-sm cursor-pointer group">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                                    <i data-lucide="file-signature" class="w-4 h-4 text-purple-600"></i>
+                                                </div>
+                                                <h3 class="font-semibold text-slate-800">Продал агентский договор</h3>
+                                                <span class="percent-badge text-white text-xs px-2 py-1 rounded-full font-bold">10%</span>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">
+                                                <span class="font-medium text-purple-600">Встреча у продавца</span>, презентация услуг агентства, заключение договора на оказание риэлторских услуг.
+                                            </p>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-purple-400 transition-colors"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3 -->
+                                <div class="action-card bg-white border-l-4 border-blue-400 rounded-r-xl p-4 shadow-sm cursor-pointer group">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                    <i data-lucide="users" class="w-4 h-4 text-blue-600"></i>
+                                                </div>
+                                                <h3 class="font-semibold text-slate-800">Привёл покупателя</h3>
+                                                <span class="percent-badge text-white text-xs px-2 py-1 rounded-full font-bold">15%</span>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">
+                                                Исполнитель получает <span class="font-medium text-blue-600">право рекламировать объект</span> и получать звонки. Несёт косты, но потом продаёт покупателей.
+                                            </p>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-blue-400 transition-colors"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Step 4 -->
+                                <div class="action-card bg-white border-l-4 border-amber-400 rounded-r-xl p-4 shadow-sm cursor-pointer group">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                                                    <i data-lucide="eye" class="w-4 h-4 text-amber-600"></i>
+                                                </div>
+                                                <h3 class="font-semibold text-slate-800">Провёл показ</h3>
+                                                <span class="percent-badge text-white text-xs px-2 py-1 rounded-full font-bold">20%</span>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">
+                                                <span class="font-medium text-amber-600">Встреча на объекте</span> и продажа района, дома и самой квартиры для покупателя. Работа с возражениями на месте.
+                                            </p>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-amber-400 transition-colors"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Step 5 -->
+                                <div class="action-card bg-emerald-50 border-l-4 border-emerald-500 rounded-r-xl p-4 shadow-sm cursor-pointer group">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+                                                </div>
+                                                <h3 class="font-semibold text-emerald-900">Довёл до сделки</h3>
+                                                <span class="bg-emerald-600 text-white text-xs px-2 py-1 rounded-full font-bold">40%</span>
+                                            </div>
+                                            <p class="text-sm text-emerald-800 leading-relaxed">
+                                                <span class="font-medium text-emerald-700">Организация сделки</span> и загрузка документов для хаба бэка. Координация всех участников: банки, нотариусы, регистраторы.
+                                            </p>
+                                        </div>
+                                        <i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Money Flow Visualization -->
+                            <div class="mt-6 pt-4 border-t border-slate-200">
+                                <div class="flex items-center justify-center gap-8 text-sm">
+                                    <div class="flex items-center gap-2 text-emerald-600 font-semibold money-pulse">
+                                        <i data-lucide="banknote" class="w-5 h-5"></i>
+                                        <span>Оплата только за успешную сделку</span>
+                                    </div>
+                                    <div class="h-4 w-px bg-slate-300"></div>
+                                    <div class="flex items-center gap-2 text-indigo-600">
+                                        <i data-lucide="activity" class="w-5 h-5"></i>
+                                        <span>Автоматическое распределение по факту вклада</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level 3: Agents (Bottom) - Simplified -->
+            <div class="relative z-10">
+                <div class="flex justify-center">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-8 w-full max-w-2xl hover-lift">
+                        <div class="flex items-center justify-center gap-6 mb-6">
+                            <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                                <i data-lucide="user" class="w-8 h-8"></i>
+                            </div>
+                            <div class="text-left">
+                                <h3 class="text-xl font-bold text-slate-800">Агенты — самостоятельные исполнители</h3>
+                                <p class="text-slate-500">Самозанятые • ИП • Юридические лица</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="flex items-center gap-3 bg-slate-50 rounded-lg p-4">
+                                <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-slate-700">Работают на себя</span>
+                            </div>
+                            <div class="flex items-center gap-3 bg-slate-50 rounded-lg p-4">
+                                <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-slate-700">Выбирают действия</span>
+                            </div>
+                            <div class="flex items-center gap-3 bg-slate-50 rounded-lg p-4">
+                                <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                                </div>
+                                <span class="text-sm font-medium text-slate-700">Получают долю за вклад</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-sm">
+                            <span class="text-slate-500">Статус:</span>
+                            <span class="text-emerald-600 font-semibold flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                Активны
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reverse Money Flow -->
+                <div class="flex justify-center mt-8">
+                    <div class="bg-slate-100 rounded-xl p-4 max-w-2xl w-full">
+                        <div class="flex items-center justify-center gap-4 text-sm text-slate-600">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="arrow-up" class="w-4 h-4 text-slate-400"></i>
+                                <span class="font-medium">Комиссия агентству</span>
+                            </div>
+                            <div class="h-4 w-px bg-slate-300"></div>
+                            <span class="text-xs">Аренда рабочего места и доступ к платформе</span>
+                            <div class="h-4 w-px bg-slate-300"></div>
+                            <span class="text-xs text-slate-400 italic">Размер определяет агентство • По аналогии с таксопарком</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Messages -->
+            <div class="mt-12 grid grid-cols-4 gap-6 relative z-10">
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-center">
+                    <p class="text-indigo-900 font-semibold text-sm">Агентство — оператор экосистемы</p>
+                </div>
+                <div class="bg-purple-50 border border-purple-100 rounded-xl p-4 text-center">
+                    <p class="text-purple-900 font-semibold text-sm">Агент — самостоятельный исполнитель</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center">
+                    <p class="text-emerald-900 font-semibold text-sm">Платформа — рынок действий</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-center">
+                    <p class="text-amber-900 font-semibold text-sm">Деньги → данные → рекомендации</p>
+                </div>
+            </div>
+
+            <!-- Bottom Quote -->
+            <div class="mt-12 text-center relative z-10">
+                <div class="inline-block bg-slate-900 text-white rounded-2xl px-8 py-4 shadow-xl">
+                    <p class="text-lg font-medium">«Мы строим Uber-модель для агентства недвижимости»</p>
+                    <p class="text-slate-400 text-sm mt-2">Агентство — оператор • Агенты — самостоятельные исполнители • Платформа — рынок действий</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Visual Explanations -->
+        <div class="mt-8 grid grid-cols-3 gap-6 text-center text-sm text-slate-600">
+            <div class="flex items-center justify-center gap-2">
+                <i data-lucide="shield" class="w-5 h-5 text-indigo-600"></i>
+                <span>АН не теряет контроль и экономику</span>
+            </div>
+            <div class="flex items-center justify-center gap-2">
+                <i data-lucide="users" class="w-5 h-5 text-purple-600"></i>
+                <span>Агенты остаются независимыми</span>
+            </div>
+            <div class="flex items-center justify-center gap-2">
+                <i data-lucide="cpu" class="w-5 h-5 text-emerald-600"></i>
+                <span>ИИ появляется естественно из данных</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Add interactivity
+        document.querySelectorAll('.hover-lift').forEach(el => {
+            el.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            el.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Animate action cards on click
+        document.querySelectorAll('.action-card').forEach((el) => {
+            el.addEventListener('click', function() {
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
